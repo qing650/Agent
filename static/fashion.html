@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天气穿搭 Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #101715;
+            --surface: rgba(18, 25, 23, 0.88);
+            --panel-soft: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.09);
+            --text: #ebe6da;
+            --text-dim: #9da8a2;
+            --gold: #d0aa57;
+            --green: #5aad82;
+            --blue: #7ab0ef;
+            --coral: #d77a5f;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --font-serif: "Noto Serif SC", serif;
+            --font-sans: "Noto Sans SC", sans-serif;
+            --font-mono: "JetBrains Mono", monospace;
+            --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        body[data-theme="light"] {
+            --bg: #f5f1e8;
+            --surface: rgba(255, 255, 255, 0.92);
+            --panel-soft: rgba(18, 25, 23, 0.05);
+            --border: rgba(24, 36, 31, 0.12);
+            --text: #19221e;
+            --text-dim: #5a6661;
+            --gold: #a77e2a;
+            --green: #2f7a58;
+            --blue: #4d79b9;
+            --coral: #bf6e54;
+            --shadow: 0 18px 40px rgba(30, 42, 37, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: var(--font-sans);
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(90, 173, 130, 0.16), transparent 30%),
+                radial-gradient(circle at 90% 10%, rgba(208, 170, 87, 0.12), transparent 24%),
+                linear-gradient(180deg, #0d1311 0%, #121a17 100%);
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        body[data-theme="light"] {
+            background:
+                radial-gradient(circle at top left, rgba(47, 122, 88, 0.12), transparent 30%),
+                radial-gradient(circle at 90% 10%, rgba(167, 126, 42, 0.08), transparent 24%),
+                linear-gradient(180deg, #f7f3ec 0%, #ede7dd 100%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .page {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 24px 0 48px;
+        }
+
+        .topbar,
+        .grid,
+        .lab,
+        .footer {
+            position: relative;
+            z-index: 1;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(15, 21, 19, 0.78);
+            backdrop-filter: blur(18px);
+        }
+
+        body[data-theme="light"] .topbar {
+            background: rgba(255, 255, 255, 0.78);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #3d7a5a, #c9a84c);
+            color: #0f1512;
+            font: 700 16px var(--font-serif);
+        }
+
+        .brand strong {
+            display: block;
+            font: 700 17px var(--font-serif);
+        }
+
+        .brand span,
+        .toplinks a,
+        .step-kicker,
+        .meta,
+        label {
+            color: var(--text-dim);
+        }
+
+        .toplinks {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .chip,
+        button {
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--panel-soft);
+            color: var(--text);
+            cursor: pointer;
+            transition: 0.2s ease;
+            font-size: 13px;
+        }
+
+        .chip:hover,
+        button:hover {
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        .theme-btn {
+            background: transparent;
+        }
+
+        body[data-theme="light"] .theme-btn {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, rgba(90, 173, 130, 0.24), rgba(208, 170, 87, 0.18));
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .step-card,
+        .lab-panel {
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .step-card {
+            padding: 24px;
+        }
+
+        .step-card:nth-child(1) {
+            background: linear-gradient(180deg, rgba(122, 176, 239, 0.08), rgba(18, 25, 23, 0.88));
+        }
+
+        .step-card:nth-child(2) {
+            background: linear-gradient(180deg, rgba(215, 122, 95, 0.08), rgba(18, 25, 23, 0.88));
+        }
+
+        .step-card:nth-child(3) {
+            background: linear-gradient(180deg, rgba(90, 173, 130, 0.08), rgba(18, 25, 23, 0.88));
+        }
+
+        body[data-theme="light"] .step-card:nth-child(1),
+        body[data-theme="light"] .step-card:nth-child(2),
+        body[data-theme="light"] .step-card:nth-child(3) {
+            background: var(--surface);
+        }
+
+        .step-kicker {
+            font: 500 11px var(--font-mono);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .step-card h2 {
+            margin-top: 12px;
+            font: 700 26px/1.2 var(--font-serif);
+        }
+
+        .step-card p,
+        .step-card li {
+            margin-top: 12px;
+            color: var(--text-dim);
+            line-height: 1.8;
+            font-size: 14px;
+        }
+
+        .step-card ul {
+            padding-left: 18px;
+        }
+
+        .lab {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        .lab-panel {
+            padding: 28px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .section-head h2 {
+            font: 700 34px var(--font-serif);
+        }
+
+        .section-head p {
+            max-width: 760px;
+            color: var(--text-dim);
+            line-height: 1.85;
+        }
+
+        .meta {
+            font: 500 11px var(--font-mono);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            font: 400 14px var(--font-sans);
+            outline: none;
+        }
+
+        body[data-theme="light"] input {
+            background: rgba(24, 36, 31, 0.03);
+        }
+
+        input:focus {
+            border-color: rgba(90, 173, 130, 0.4);
+            box-shadow: 0 0 0 3px rgba(90, 173, 130, 0.08);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .result {
+            margin-top: 18px;
+            min-height: 300px;
+            padding: 22px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        body[data-theme="light"] .result {
+            background: rgba(24, 36, 31, 0.03);
+        }
+
+        .result.loading {
+            opacity: 0.72;
+        }
+
+        .empty {
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .pill-row,
+        .list-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pill,
+        .bullet {
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            font-size: 13px;
+        }
+
+        body[data-theme="light"] .pill,
+        body[data-theme="light"] .bullet {
+            background: rgba(24, 36, 31, 0.04);
+        }
+
+        .result h3 {
+            font: 700 24px var(--font-serif);
+            margin-bottom: 12px;
+        }
+
+        .copy {
+            white-space: pre-wrap;
+            line-height: 1.85;
+            margin: 16px 0;
+        }
+
+        .block-title {
+            margin: 16px 0 10px;
+            font-weight: 600;
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .workflow-step {
+            padding: 14px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        body[data-theme="light"] .workflow-step {
+            background: rgba(24, 36, 31, 0.03);
+        }
+
+        .workflow-step .step-kicker {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .workflow-step h4 {
+            font: 700 18px/1.3 var(--font-serif);
+        }
+
+        .workflow-step p {
+            margin-top: 10px;
+            color: var(--text-dim);
+            line-height: 1.75;
+            font-size: 13px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding: 0 2px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            color: var(--text-dim);
+            font-size: 12px;
+        }
+
+        @media (max-width: 920px) {
+            .grid,
+            .form-grid,
+            .workflow-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar,
+            .footer,
+            .section-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="topbar">
+            <div class="brand">
+                <div class="mark">M</div>
+                <div>
+                    <strong>天气穿搭 Agent</strong>
+                    <span>MyAgent</span>
+                </div>
+            </div>
+            <nav class="toplinks">
+                <a class="chip" href="/">返回首页</a>
+                <button class="theme-btn" id="themeToggleBtn" type="button">浅色模式</button>
+            </nav>
+        </header>
+
+        <section class="grid">
+            <article class="step-card">
+                <div class="step-kicker">Step 01</div>
+                <h2>天气获取</h2>
+                <ul>
+                    <li>输入：城市名称</li>
+                    <li>输出：温度、天气描述、湿度、风速等基础信息</li>
+                </ul>
+            </article>
+
+            <article class="step-card">
+                <div class="step-kicker">Step 02</div>
+                <h2>穿搭建议</h2>
+                <p>把天气结果交给时尚顾问智能体，再结合场景和风格偏好，生成上装、下装、鞋履、外层和注意事项。</p>
+                <ul>
+                    <li>输入：结构化天气数据</li>
+                    <li>输出：完整穿搭建议</li>
+                </ul>
+            </article>
+
+            <article class="step-card">
+                <div class="step-kicker">Step 03</div>
+                <h2>协调器</h2>
+                <p>协调器负责编排前两步，把天气与穿搭结果整合成统一输出，保持流程清晰、职责明确、结果便于展示。</p>
+                <ul>
+                    <li>输入：天气结果 + 穿搭结果</li>
+                    <li>输出：最终建议与重点提醒</li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="lab" id="lab">
+            <div class="lab-panel">
+                <div class="section-head">
+                    <div>
+                        <div class="meta">Experience Lab</div>
+                        <h2>智能穿搭助手</h2>
+                    </div>
+                </div>
+
+                <form id="fashion-form">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="city">城市</label>
+                            <input id="city" name="city" value="Shanghai" placeholder="例如：Shanghai / 北京">
+                        </div>
+                        <div class="field">
+                            <label for="occasion">场景</label>
+                            <input id="occasion" name="occasion" placeholder="例如：通勤 / 约会 / 出游">
+                        </div>
+                        <div class="field full">
+                            <label for="style_preference">风格偏好</label>
+                            <input id="style_preference" name="style_preference" placeholder="例如：都市极简 / 轻户外 / 松弛感">
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button type="submit" class="primary">生成建议</button>
+                        <button type="button" id="demo-btn">东京通勤示例</button>
+                    </div>
+                </form>
+
+                <section class="result" id="result">
+                    <div class="empty" id="empty">提交查询后，这里会展示协调器整合后的天气与穿搭建议结果。</div>
+                    <div id="content" hidden></div>
+                </section>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <span>MyAgent Fashion Agent Page</span>
+        </footer>
+    </main>
+
+    <script>
+        (function () {
+            const key = "myagent-theme";
+            const btn = document.getElementById("themeToggleBtn");
+
+            if (!btn) {
+                return;
+            }
+
+            function apply(theme) {
+                document.body.dataset.theme = theme;
+                btn.textContent = theme === "light" ? "深色模式" : "浅色模式";
+            }
+
+            const stored = localStorage.getItem(key);
+            apply(stored === "light" ? "light" : "dark");
+
+            btn.addEventListener("click", () => {
+                const next = document.body.dataset.theme === "light" ? "dark" : "light";
+                localStorage.setItem(key, next);
+                apply(next);
+            });
+        })();
+
+        const form = document.getElementById("fashion-form");
+        const demoBtn = document.getElementById("demo-btn");
+        const result = document.getElementById("result");
+        const empty = document.getElementById("empty");
+        const content = document.getElementById("content");
+
+        function esc(value) {
+            return String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function list(items, cls) {
+            return (items || []).map((item) => `<span class="${cls}">${esc(item)}</span>`).join("");
+        }
+
+        function renderWorkflowSteps(steps) {
+            if (!steps || !steps.length) {
+                return "";
+            }
+
+            return `
+                <div class="block-title">三步流程</div>
+                <div class="workflow-grid">
+                    ${steps.map((step) => `
+                        <article class="workflow-step">
+                            <span class="step-kicker">${esc(step.step || "")}</span>
+                            <h4>${esc(step.title || "流程步骤")}</h4>
+                            <p><strong>输入：</strong>${esc(step.input || "未提供")}</p>
+                            <p><strong>输出：</strong>${esc(step.output || "处理中")}</p>
+                        </article>
+                    `).join("")}
+                </div>
+            `;
+        }
+
+        function render(data) {
+            const weather = data.weather || {};
+            content.innerHTML = `
+                <div class="pill-row">
+                    <span class="pill">${esc(weather.city || "Unknown")}</span>
+                    <span class="pill">${esc(weather.temperature ?? "--")}${esc(weather.temperature_unit || "C")}</span>
+                    <span class="pill">${esc(weather.description || "未提供")}</span>
+                    <span class="pill">${esc(weather.source || "demo")}</span>
+                </div>
+                <h3 style="margin-top: 14px;">协调器整合结果</h3>
+                <div class="copy">${esc(data.advice || "暂无建议")}</div>
+                ${renderWorkflowSteps(data.workflow_steps)}
+                <div class="block-title">推荐搭配</div>
+                <div class="list-row">${list(data.outfit_summary, "bullet")}</div>
+                <div class="block-title">关键提醒</div>
+                <div class="list-row">${list(data.highlights, "bullet")}</div>
+            `;
+            empty.hidden = true;
+            content.hidden = false;
+        }
+
+        function renderStreamingState(data) {
+            const weather = data.weather || {};
+            const advice = data.advice || "";
+            content.innerHTML = `
+                <div class="pill-row">
+                    <span class="pill">${esc(weather.city || "Unknown")}</span>
+                    <span class="pill">${esc(weather.temperature ?? "--")}${esc(weather.temperature_unit || "C")}</span>
+                    <span class="pill">${esc(weather.description || "未提供")}</span>
+                    <span class="pill">${esc(weather.source || "demo")}</span>
+                </div>
+                <h3 style="margin-top: 14px;">协调器整合结果</h3>
+                <div class="copy">${esc(advice || "正在生成穿搭建议...")}</div>
+                ${renderWorkflowSteps(data.workflow_steps)}
+                <div class="block-title">推荐搭配</div>
+                <div class="list-row">${list(data.outfit_summary, "bullet")}</div>
+                <div class="block-title">关键提醒</div>
+                <div class="list-row">${list(data.highlights, "bullet")}</div>
+            `;
+            empty.hidden = true;
+            content.hidden = false;
+        }
+
+        function applyStreamPayload(streamingData, payload) {
+            if (payload.type === "meta") {
+                Object.assign(streamingData, payload.data || {});
+                renderStreamingState(streamingData);
+            } else if (payload.type === "content") {
+                streamingData.advice += payload.data || "";
+                renderStreamingState(streamingData);
+            } else if (payload.type === "done") {
+                render(payload.data || streamingData);
+            } else if (payload.type === "error") {
+                throw new Error(payload.data || "流式响应失败");
+            }
+        }
+
+        function consumeSseChunk(buffer, streamingData) {
+            const lines = buffer.split("\n");
+            const rest = lines.pop() || "";
+
+            for (const line of lines) {
+                if (!line.startsWith("data:")) {
+                    continue;
+                }
+                const raw = line.slice(5).trim();
+                if (!raw) {
+                    continue;
+                }
+                applyStreamPayload(streamingData, JSON.parse(raw));
+            }
+
+            return rest;
+        }
+
+        async function requestAdvice(payload) {
+            result.classList.add("loading");
+            try {
+                const response = await fetch("/api/fashion/advice_stream", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    let json = {};
+                    try {
+                        json = await response.json();
+                    } catch (error) {
+                        json = {};
+                    }
+                    throw new Error(json.detail || json.message || `请求失败：HTTP ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = "";
+                const streamingData = {
+                    weather: {},
+                    advice: "",
+                    outfit_summary: [],
+                    highlights: [],
+                    workflow_steps: []
+                };
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        break;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+                    buffer = consumeSseChunk(buffer, streamingData);
+                }
+
+                buffer += decoder.decode();
+                if (buffer.trim()) {
+                    buffer = consumeSseChunk(`${buffer}\n`, streamingData);
+                }
+            } catch (error) {
+                content.innerHTML = `<h3>请求失败</h3><div class="copy">${esc(error.message || "未知错误")}</div>`;
+                empty.hidden = true;
+                content.hidden = false;
+            } finally {
+                result.classList.remove("loading");
+            }
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const data = new FormData(form);
+            await requestAdvice({
+                city: data.get("city"),
+                occasion: data.get("occasion"),
+                style_preference: data.get("style_preference")
+            });
+        });
+
+        demoBtn.addEventListener("click", async () => {
+            document.getElementById("city").value = "Tokyo";
+            document.getElementById("occasion").value = "工作日通勤";
+            document.getElementById("style_preference").value = "都市极简";
+            await requestAdvice({
+                city: "Tokyo",
+                occasion: "工作日通勤",
+                style_preference: "都市极简"
+            });
+        });
+    </script>
+</body>
+</html>

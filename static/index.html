@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyAgent 平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #0e1210;
+    --surface: #141a16;
+    --panel: #1a2220;
+    --raised: #1f2925;
+    --border: rgba(255,255,255,0.07);
+    --border-hi: rgba(255,255,255,0.14);
+    --text: #e8e2d6;
+    --text-dim: #8a9490;
+    --text-faint: #4a5552;
+    --gold: #c9a84c;
+    --gold-dim: rgba(201,168,76,0.18);
+    --green: #3d7a5a;
+    --green-hi: #5aad82;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.35);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.5);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.65);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --font-serif: 'Noto Serif SC', 'SimSun', serif;
+    --font-sans: 'Noto Sans SC', 'PingFang SC', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --t: 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+
+body[data-theme="light"] {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --panel: #f5f7fa;
+    --raised: #eef0f4;
+    --border: rgba(30,40,60,0.10);
+    --border-hi: rgba(30,40,60,0.20);
+    --text: #1a2030;
+    --text-dim: #556070;
+    --text-faint: #8f9aaa;
+    --gold: #1a7a5e;
+    --gold-dim: rgba(26,122,94,0.10);
+    --green: #1a7a5e;
+    --green-hi: #22a07a;
+    --shadow-sm: 0 1px 4px rgba(20,30,60,0.08), 0 2px 8px rgba(20,30,60,0.05);
+    --shadow-md: 0 4px 16px rgba(20,30,60,0.10), 0 8px 24px rgba(20,30,60,0.07);
+    --shadow-lg: 0 12px 40px rgba(20,30,60,0.13);
+}
+
+html, body { height: 100%; }
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.3s, color 0.3s;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 70% 50% at 10% 10%, rgba(61,122,90,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 60% at 90% 85%, rgba(201,168,76,0.07) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(61,122,90,0.04) 0%, transparent 60%);
+    z-index: 0;
+}
+
+body[data-theme="light"]::before {
+    background:
+        radial-gradient(ellipse 70% 50% at 10% 10%, rgba(26,122,94,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 60% at 90% 85%, rgba(59,111,212,0.05) 0%, transparent 50%);
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 99px; }
+
+.shell {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 64px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(14,18,16,0.72);
+    backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-shrink: 0;
+}
+
+body[data-theme="light"] .topnav {
+    background: rgba(255,255,255,0.82);
+    border-bottom-color: rgba(30,40,60,0.10);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.nav-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--green), #1e4a32);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-weight: 700;
+    color: #a8e6c6;
+    box-shadow: 0 0 0 1px rgba(90,173,130,0.3), var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+body[data-theme="light"] .nav-logo {
+    background: linear-gradient(135deg, #1a7a5e, #115040);
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(26,122,94,0.25), var(--shadow-sm);
+}
+
+.nav-wordmark {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.02em;
+}
+
+.nav-tagline {
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.06em;
+    margin-top: 1px;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-faint);
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green-hi);
+    box-shadow: 0 0 6px rgba(90,173,130,0.5);
+    animation: pulse 2.4s ease-in-out infinite;
+}
+
+body[data-theme="light"] .status-dot {
+    background: #22a07a;
+    box-shadow: 0 0 6px rgba(26,122,94,0.45);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.theme-btn {
+    padding: 7px 14px;
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-dim);
+    font: 400 12px var(--font-sans);
+    cursor: pointer;
+    transition: var(--t);
+}
+
+.theme-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-dim);
+}
+
+body[data-theme="light"] .theme-btn {
+    background: #ffffff;
+    border-color: rgba(30,40,60,0.15);
+    box-shadow: 0 1px 3px rgba(20,30,60,0.06);
+}
+
+.hero {
+    padding: 72px 40px 56px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 14px;
+    border-radius: 99px;
+    border: 1px solid rgba(90,173,130,0.25);
+    background: rgba(61,122,90,0.10);
+    font: 500 11px var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green-hi);
+    margin-bottom: 24px;
+}
+
+body[data-theme="light"] .hero-eyebrow {
+    border-color: rgba(26,122,94,0.25);
+    background: rgba(26,122,94,0.08);
+    color: var(--green);
+}
+
+.hero-eyebrow::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green-hi);
+    flex-shrink: 0;
+}
+
+body[data-theme="light"] .hero-eyebrow::before {
+    background: var(--green);
+}
+
+.hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin-bottom: 18px;
+}
+
+.hero-title em {
+    font-style: normal;
+    color: var(--gold);
+}
+
+body[data-theme="light"] .hero-title em {
+    background: linear-gradient(135deg, #1a7a5e, #3b6fd4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-sub {
+    font-size: 16px;
+    color: var(--text-dim);
+    line-height: 1.75;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
+
+.hero-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--border-hi);
+    background: var(--panel);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    transition: var(--t);
+}
+
+.hero-link:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-dim);
+    transform: translateY(-1px);
+}
+
+body[data-theme="light"] .hero-link {
+    background: #ffffff;
+    border-color: rgba(30,40,60,0.12);
+}
+
+.hero-link.primary {
+    background: linear-gradient(135deg, rgba(61,122,90,0.22), rgba(201,168,76,0.12));
+}
+
+body[data-theme="light"] .hero-link.primary {
+    background: linear-gradient(135deg, rgba(26,122,94,0.10), rgba(59,111,212,0.08));
+}
+
+.section-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    white-space: nowrap;
+}
+
+body[data-theme="light"] .section-label {
+    color: var(--green);
+}
+
+.section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.content {
+    flex: 1;
+    padding: 0 40px 80px;
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    margin-bottom: 56px;
+}
+
+.agent-card {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    padding: 28px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    transition: border-color var(--t), box-shadow var(--t), transform var(--t), background var(--t);
+    overflow: hidden;
+}
+
+.agent-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity var(--t);
+    pointer-events: none;
+}
+
+.agent-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-hi);
+    box-shadow: var(--shadow-md);
+}
+
+body[data-theme="light"] .agent-card {
+    background: #ffffff;
+    border-color: rgba(30,40,60,0.10);
+    box-shadow: 0 1px 4px rgba(20,30,60,0.06);
+}
+
+body[data-theme="light"] .agent-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: rgba(30,40,60,0.18);
+}
+
+.agent-card[data-color="green"]::before { background: linear-gradient(135deg, rgba(61,122,90,0.08) 0%, transparent 60%); }
+.agent-card[data-color="gold"]::before { background: linear-gradient(135deg, rgba(201,168,76,0.08) 0%, transparent 60%); }
+.agent-card[data-color="blue"]::before { background: linear-gradient(135deg, rgba(60,110,200,0.08) 0%, transparent 60%); }
+.agent-card[data-color="purple"]::before { background: linear-gradient(135deg, rgba(130,80,200,0.08) 0%, transparent 60%); }
+.agent-card[data-color="coral"]::before { background: linear-gradient(135deg, rgba(200,90,70,0.08) 0%, transparent 60%); }
+
+.agent-card:hover::before { opacity: 1; }
+
+.card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.agent-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.agent-icon.green  { background: linear-gradient(135deg, rgba(61,122,90,0.3), rgba(42,92,64,0.2)); border: 1px solid rgba(90,173,130,0.2); }
+.agent-icon.gold   { background: linear-gradient(135deg, rgba(201,168,76,0.25), rgba(150,120,40,0.15)); border: 1px solid rgba(201,168,76,0.2); }
+.agent-icon.blue   { background: linear-gradient(135deg, rgba(60,110,200,0.25), rgba(30,70,160,0.15)); border: 1px solid rgba(90,140,230,0.2); }
+.agent-icon.purple { background: linear-gradient(135deg, rgba(130,80,200,0.25), rgba(90,40,160,0.15)); border: 1px solid rgba(160,110,230,0.2); }
+.agent-icon.coral  { background: linear-gradient(135deg, rgba(200,90,70,0.25), rgba(160,50,40,0.15)); border: 1px solid rgba(230,120,100,0.2); }
+
+body[data-theme="light"] .agent-icon.green  { background: rgba(26,122,94,0.10); border-color: rgba(26,122,94,0.20); }
+body[data-theme="light"] .agent-icon.gold   { background: rgba(201,168,76,0.12); border-color: rgba(180,140,40,0.22); }
+body[data-theme="light"] .agent-icon.blue   { background: rgba(59,111,212,0.10); border-color: rgba(59,111,212,0.20); }
+body[data-theme="light"] .agent-icon.purple { background: rgba(130,80,200,0.10); border-color: rgba(130,80,200,0.20); }
+body[data-theme="light"] .agent-icon.coral  { background: rgba(200,90,70,0.10); border-color: rgba(200,90,70,0.20); }
+
+.card-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.badge-online  { background: rgba(90,173,130,0.15); color: var(--green-hi); border: 1px solid rgba(90,173,130,0.25); }
+.badge-beta    { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.25); }
+.badge-soon    { background: rgba(74,85,82,0.25); color: var(--text-faint); border: 1px solid var(--border); }
+.badge-new     { background: rgba(60,110,200,0.15); color: #7ab0ef; border: 1px solid rgba(90,140,220,0.25); }
+
+body[data-theme="light"] .badge-online  { background: rgba(26,122,94,0.10); color: #1a7a5e; border-color: rgba(26,122,94,0.25); }
+body[data-theme="light"] .badge-beta    { background: rgba(180,140,40,0.10); color: #8a6010; border-color: rgba(180,140,40,0.25); }
+body[data-theme="light"] .badge-soon    { background: rgba(30,40,60,0.06); color: var(--text-faint); border-color: var(--border); }
+body[data-theme="light"] .badge-new     { background: rgba(59,111,212,0.10); color: #3b6fd4; border-color: rgba(59,111,212,0.25); }
+
+.badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.badge-online::before  { background: var(--green-hi); }
+.badge-beta::before    { background: var(--gold); }
+.badge-soon::before    { background: var(--text-faint); }
+.badge-new::before     { background: #7ab0ef; }
+
+body[data-theme="light"] .badge-online::before { background: #1a7a5e; }
+body[data-theme="light"] .badge-beta::before   { background: #8a6010; }
+body[data-theme="light"] .badge-new::before    { background: #3b6fd4; }
+
+.card-body { flex: 1; }
+
+.card-name {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: 0.01em;
+}
+
+.card-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+}
+
+.card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.tag {
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-faint);
+    transition: var(--t);
+}
+
+body[data-theme="light"] .tag {
+    background: #f0f4f8;
+    border-color: rgba(30,40,60,0.10);
+    color: #8f9aaa;
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+}
+
+.card-meta {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-faint);
+}
+
+.card-arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border-hi);
+    display: grid;
+    place-items: center;
+    color: var(--text-faint);
+    font-size: 14px;
+    transition: var(--t);
+    flex-shrink: 0;
+}
+
+.agent-card:hover .card-arrow {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-dim);
+    transform: translateX(2px);
+}
+
+.agent-card.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.agent-card.featured {
+    grid-column: span 2;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+}
+
+.featured .card-body { flex: 1; }
+
+.featured .agent-icon {
+    width: 72px;
+    height: 72px;
+    font-size: 30px;
+    border-radius: var(--radius-lg);
+}
+
+body[data-theme="light"] .agent-card.featured {
+    border-color: rgba(26,122,94,0.25);
+    background: linear-gradient(135deg, rgba(26,122,94,0.04), #ffffff);
+}
+
+.stats-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 56px;
+}
+
+.stat-tile {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: var(--t);
+}
+
+.stat-tile:hover {
+    border-color: var(--border-hi);
+    box-shadow: var(--shadow-sm);
+}
+
+body[data-theme="light"] .stat-tile {
+    background: #ffffff;
+    border-color: rgba(30,40,60,0.10);
+    box-shadow: 0 1px 4px rgba(20,30,60,0.05);
+}
+
+body[data-theme="light"] .stat-tile:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: rgba(30,40,60,0.18);
+}
+
+.stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+}
+
+body[data-theme="light"] .stat-icon { background: #f0f4f8; border-color: rgba(30,40,60,0.08); }
+
+.stat-info { flex: 1; min-width: 0; }
+
+.stat-val {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 3px;
+}
+
+body[data-theme="light"] .stat-val { color: var(--green); }
+
+.stat-label {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.panel-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    padding: 24px;
+}
+
+body[data-theme="light"] .panel-card {
+    background: #ffffff;
+    border-color: rgba(30,40,60,0.10);
+    box-shadow: 0 1px 4px rgba(20,30,60,0.05);
+}
+
+.panel-title {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 18px;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 10px;
+    border-radius: var(--radius-md);
+    transition: var(--t);
+    cursor: default;
+}
+
+.activity-item:hover { background: var(--panel); }
+body[data-theme="light"] .activity-item:hover { background: #f5f7fa; }
+
+.activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+.dot-green { background: var(--green-hi); }
+.dot-gold { background: var(--gold); }
+.dot-blue { background: #7ab0ef; }
+.dot-faint { background: var(--text-faint); }
+
+body[data-theme="light"] .dot-green { background: var(--green); }
+body[data-theme="light"] .dot-gold { background: #8a6010; }
+body[data-theme="light"] .dot-blue { background: #3b6fd4; }
+
+.activity-body { flex: 1; min-width: 0; }
+
+.activity-text {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 3px;
+}
+
+.activity-text strong { color: var(--gold); font-weight: 500; }
+body[data-theme="light"] .activity-text strong { color: var(--green); }
+
+.activity-time {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-faint);
+}
+
+.quick-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--panel);
+    text-decoration: none;
+    color: var(--text);
+    transition: var(--t);
+}
+
+.quick-link:hover {
+    border-color: var(--border-hi);
+    background: var(--raised);
+    box-shadow: var(--shadow-sm);
+}
+
+body[data-theme="light"] .quick-link {
+    background: #f5f7fa;
+    border-color: rgba(30,40,60,0.09);
+}
+
+body[data-theme="light"] .quick-link:hover {
+    background: #eef2f8;
+    border-color: rgba(26,122,94,0.25);
+    box-shadow: var(--shadow-sm);
+}
+
+.quick-link-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    display: grid;
+    place-items: center;
+    font-size: 15px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+body[data-theme="light"] .quick-link-icon {
+    background: #ffffff;
+    border-color: rgba(30,40,60,0.10);
+}
+
+.quick-link-text { flex: 1; min-width: 0; }
+
+.quick-link-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.quick-link-desc {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 1px;
+}
+
+.quick-link-chevron {
+    color: var(--text-faint);
+    font-size: 13px;
+    transition: var(--t);
+}
+
+.quick-link:hover .quick-link-chevron { color: var(--gold); transform: translateX(2px); }
+body[data-theme="light"] .quick-link:hover .quick-link-chevron { color: var(--green); }
+
+.footer {
+    padding: 28px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+body[data-theme="light"] .footer { border-top-color: rgba(30,40,60,0.10); }
+
+.footer-left {
+    font-size: 12px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-links a {
+    font-size: 12px;
+    color: var(--text-faint);
+    text-decoration: none;
+    transition: var(--t);
+}
+
+.footer-links a:hover { color: var(--gold); }
+body[data-theme="light"] .footer-links a:hover { color: var(--green); }
+
+@media (max-width: 1100px) {
+    .stats-strip { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    .agent-card.featured { grid-column: span 1; flex-direction: column; }
+}
+
+@media (max-width: 760px) {
+    .topnav { padding: 0 20px; }
+    .hero { padding: 48px 20px 40px; }
+    .content { padding: 0 20px 60px; }
+    .agent-grid { grid-template-columns: 1fr; }
+    .stats-strip { grid-template-columns: 1fr 1fr; }
+    .footer { flex-direction: column; text-align: center; }
+    .nav-tagline { display: none; }
+    .nav-status { display: none; }
+}
+    </style>
+</head>
+<body>
+<div class="shell">
+    <nav class="topnav">
+        <a class="nav-brand" href="#">
+            <div class="nav-logo">M</div>
+            <div>
+                <div class="nav-wordmark">MyAgent</div>
+                <div class="nav-tagline">智能体管理平台</div>
+            </div>
+        </a>
+        <div class="nav-right">
+            <div class="nav-status">
+                <div class="status-dot"></div>
+                平台运行中
+            </div>
+            <button class="theme-btn" id="themeToggleBtn">浅色模式</button>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-eyebrow">Agent 管理平台</div>
+        <h1 class="hero-title">集中管理，按需调度<br><em>全部智能体</em></h1>
+        <p class="hero-sub">在这里统一入口进入各个 Agent 工作台。知识问答、小说创作、天气穿搭协作——每个 Agent 各司其职，协同工作。</p>
+    </header>
+
+    <main class="content">
+        <div class="section-head">
+            <span class="section-label">平台概览</span>
+            <div class="section-line"></div>
+        </div>
+
+        <div class="stats-strip">
+            <div class="stat-tile">
+                <div class="stat-icon">🤖</div>
+                <div class="stat-info">
+                    <div class="stat-val">6</div>
+                    <div class="stat-label">Agent 总数</div>
+                </div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <div class="stat-val">3</div>
+                    <div class="stat-label">已上线</div>
+                </div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-icon">📄</div>
+                <div class="stat-info">
+                    <div class="stat-val" id="stat-docs">—</div>
+                    <div class="stat-label">知识库文档</div>
+                </div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-icon">💬</div>
+                <div class="stat-info">
+                    <div class="stat-val" id="stat-sessions">—</div>
+                    <div class="stat-label">历史会话</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-head">
+            <span class="section-label">Agent 列表</span>
+            <div class="section-line"></div>
+        </div>
+
+        <div class="agent-grid">
+            <a class="agent-card featured" data-color="green" href="/chat">
+                <div class="agent-icon green">🔍</div>
+                <div class="card-body">
+                    <div class="card-top" style="margin-bottom: 10px;">
+                        <div>
+                            <div class="card-name">知识库问答</div>
+                        </div>
+                        <div class="card-badges">
+                            <span class="badge badge-online">已上线</span>
+                        </div>
+                    </div>
+                    <div class="card-desc">上传文档后即可对知识库进行自然语言检索。支持 RAG 多轮对话、流式输出、历史会话管理，适用于企业知识沉淀与智能检索场景。</div>
+                    <div class="card-tags" style="margin-top: 14px;">
+                        <span class="tag">RAG 检索</span>
+                        <span class="tag">多轮对话</span>
+                        <span class="tag">文档上传</span>
+                        <span class="tag">流式输出</span>
+                        <span class="tag">记忆管理</span>
+                    </div>
+                </div>
+                <div class="card-footer" style="border-top: none; padding-top: 0;">
+                    <span class="card-meta">进入工作台 →</span>
+                </div>
+            </a>
+
+            <a class="agent-card" data-color="coral" href="/fashion">
+                <div class="card-top">
+                    <div class="agent-icon coral">🌤️</div>
+                    <div class="card-badges">
+                        <span class="badge badge-online">已上线</span>
+                        <span class="badge badge-new">新增</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-name">天气穿搭 Agent</div>
+                    <div class="card-desc">根据城市天气自动生成穿搭建议，整合天气获取、风格推荐与结果协调流程，适合做多 Agent 协作演示与接口联调。</div>
+                </div>
+                <div class="card-tags">
+                    <span class="tag">天气获取</span>
+                    <span class="tag">穿搭建议</span>
+                    <span class="tag">协调器</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-meta">Fashion Agent</span>
+                    <div class="card-arrow">→</div>
+                </div>
+            </a>
+
+            <a class="agent-card" data-color="gold" href="/novel">
+                <div class="card-top">
+                    <div class="agent-icon gold">✍️</div>
+                    <div class="card-badges">
+                        <span class="badge badge-online">已上线</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-name">小说创作</div>
+                    <div class="card-desc">AI 辅助长篇小说写作。输入创意设定，自动生成结构化大纲，逐章扩写，并维护章节上下文与风格一致性。</div>
+                </div>
+                <div class="card-tags">
+                    <span class="tag">大纲生成</span>
+                    <span class="tag">章节续写</span>
+                    <span class="tag">风格标签</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-meta">Novel Studio</span>
+                    <div class="card-arrow">→</div>
+                </div>
+            </a>
+
+            <a class="agent-card disabled" data-color="blue" href="#">
+                <div class="card-top">
+                    <div class="agent-icon blue">⚡</div>
+                    <div class="card-badges">
+                        <span class="badge badge-soon">即将上线</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-name">代码助手</div>
+                    <div class="card-desc">代码审查、单元测试生成、多语言翻译与重构。结合项目上下文，提供精准的代码级建议与补全。</div>
+                </div>
+                <div class="card-tags">
+                    <span class="tag">代码审查</span>
+                    <span class="tag">测试生成</span>
+                    <span class="tag">多语言</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-meta">开发中…</span>
+                    <div class="card-arrow">→</div>
+                </div>
+            </a>
+
+            <a class="agent-card disabled" data-color="purple" href="#">
+                <div class="card-top">
+                    <div class="agent-icon purple">📊</div>
+                    <div class="card-badges">
+                        <span class="badge badge-soon">即将上线</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-name">数据分析</div>
+                    <div class="card-desc">上传 CSV / Excel，自动进行数据清洗、统计分析和可视化图表生成，并以自然语言解释分析结论。</div>
+                </div>
+                <div class="card-tags">
+                    <span class="tag">CSV 解析</span>
+                    <span class="tag">可视化</span>
+                    <span class="tag">统计分析</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-meta">开发中…</span>
+                    <div class="card-arrow">→</div>
+                </div>
+            </a>
+
+            <a class="agent-card disabled" data-color="coral" href="#">
+                <div class="card-top">
+                    <div class="agent-icon coral">🎨</div>
+                    <div class="card-badges">
+                        <span class="badge badge-beta">Beta</span>
+                        <span class="badge badge-new">新增</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-name">多模态助手</div>
+                    <div class="card-desc">图文混合输入，支持图像理解、内容提取与图像描述生成。可结合知识库进行图文联合检索与问答。</div>
+                </div>
+                <div class="card-tags">
+                    <span class="tag">图像理解</span>
+                    <span class="tag">图文问答</span>
+                    <span class="tag">内容提取</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-meta">内测中…</span>
+                    <div class="card-arrow">→</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="section-head">
+            <span class="section-label">动态 &amp; 导航</span>
+            <div class="section-line"></div>
+        </div>
+
+        <div class="two-col">
+            <div class="panel-card">
+                <div class="panel-title">最近动态</div>
+                <div class="activity-list" id="activityList">
+                    <div class="activity-item">
+                        <div class="activity-dot dot-green"></div>
+                        <div class="activity-body">
+                            <div class="activity-text">知识库问答 Agent 服务<strong>正常运行</strong></div>
+                            <div class="activity-time">刚刚</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-dot dot-gold"></div>
+                        <div class="activity-body">
+                            <div class="activity-text">Novel Studio 完成<strong>大纲生成</strong>任务</div>
+                            <div class="activity-time">5 分钟前</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-dot dot-blue"></div>
+                        <div class="activity-body">
+                            <div class="activity-text">天气穿搭 Agent 已接入<strong>三段式协作页面</strong></div>
+                            <div class="activity-time">12 分钟前</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-dot dot-blue"></div>
+                        <div class="activity-body">
+                            <div class="activity-text">知识库新增<strong>文档入库</strong>，索引已更新</div>
+                            <div class="activity-time">32 分钟前</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-dot dot-green"></div>
+                        <div class="activity-body">
+                            <div class="activity-text">知识库问答完成<strong>流式对话</strong>会话</div>
+                            <div class="activity-time">1 小时前</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-dot dot-faint"></div>
+                        <div class="activity-body">
+                            <div class="activity-text">代码助手模块进入<strong>开发阶段</strong></div>
+                            <div class="activity-time">昨天</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-title">快速导航</div>
+                <div class="quick-links">
+                    <a class="quick-link" href="/chat">
+                        <div class="quick-link-icon">🔍</div>
+                        <div class="quick-link-text">
+                            <div class="quick-link-name">知识库问答</div>
+                            <div class="quick-link-desc">上传文档，开始提问</div>
+                        </div>
+                        <span class="quick-link-chevron">›</span>
+                    </a>
+                    <a class="quick-link" href="/fashion">
+                        <div class="quick-link-icon">🌤️</div>
+                        <div class="quick-link-text">
+                            <div class="quick-link-name">天气穿搭 Agent</div>
+                            <div class="quick-link-desc">查看三段式协作并体验穿搭建议</div>
+                        </div>
+                        <span class="quick-link-chevron">›</span>
+                    </a>
+                    <a class="quick-link" href="/novel">
+                        <div class="quick-link-icon">✍️</div>
+                        <div class="quick-link-text">
+                            <div class="quick-link-name">Novel Studio</div>
+                            <div class="quick-link-desc">大纲生成 + 章节创作</div>
+                        </div>
+                        <span class="quick-link-chevron">›</span>
+                    </a>
+                    <a class="quick-link" href="/chat#upload">
+                        <div class="quick-link-icon">📂</div>
+                        <div class="quick-link-text">
+                            <div class="quick-link-name">上传文档</div>
+                            <div class="quick-link-desc">向知识库添加新文档</div>
+                        </div>
+                        <span class="quick-link-chevron">›</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-left">MyAgent Platform · v1.0.0 · 本地部署</div>
+        <div class="footer-links">
+            <a href="/chat">知识库问答</a>
+            <a href="/fashion">天气穿搭 Agent</a>
+            <a href="/novel">Novel Studio</a>
+            <a href="/api/health" target="_blank">API 状态</a>
+        </div>
+    </footer>
+</div>
+
+<script>
+(function(){
+    const KEY = 'myagent-theme';
+    const btn = document.getElementById('themeToggleBtn');
+
+    function apply(theme){
+        document.body.dataset.theme = theme;
+        btn.textContent = theme === 'light' ? '深色模式' : '浅色模式';
+    }
+
+    const stored = localStorage.getItem(KEY);
+    apply(stored === 'light' ? 'light' : 'dark');
+
+    btn.addEventListener('click', () => {
+        const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+        localStorage.setItem(KEY, next);
+        apply(next);
+    });
+
+    async function fetchStats(){
+        try {
+            const res = await fetch('/api/health', { signal: AbortSignal.timeout(3000) });
+            if (!res.ok) return;
+            const json = await res.json();
+            const d = json.data || {};
+            const docEl = document.getElementById('stat-docs');
+            const sesEl = document.getElementById('stat-sessions');
+            if (docEl) docEl.textContent = d.indexed_files ?? '—';
+            if (sesEl) sesEl.textContent = d.sessions ?? '—';
+        } catch(e) {
+        }
+    }
+
+    fetchStats();
+})();
+</script>
+</body>
+</html>

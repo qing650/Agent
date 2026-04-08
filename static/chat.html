@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库问答 · MyAgent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <link id="hljs-dark-theme" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    <link id="hljs-light-theme" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css" disabled>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <!-- ── SIDEBAR ──────────────────────────── -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">M</div>
+                <div>
+                    <h1>MyAgent</h1>
+                    <p>知识检索 + 记忆</p>
+                </div>
+            </div>
+
+            <button id="newSessionBtn" class="primary-btn">＋ 新建会话</button>
+
+            <div class="sidebar-section" id="sessions">
+                <div class="section-title">历史会话</div>
+                <div id="sessionList" class="session-list"></div>
+            </div>
+        </aside>
+
+        <!-- ── MAIN PANEL ──────────────────────── -->
+        <main class="main-panel">
+            <header class="topbar">
+                <div>
+                    <h2>知识库对话</h2>
+                    <p id="statusText">正在加载工作区状态…</p>
+                </div>
+                <div class="topbar-actions">
+                    <a href="/" class="ghost-btn" style="text-decoration:none;">← 返回平台</a>
+                    <button id="themeToggleBtn" class="ghost-btn" type="button">浅色模式</button>
+                    <button id="refreshStatsBtn" class="ghost-btn">↻ 刷新</button>
+                    <button id="diagnoseBtn" class="ghost-btn">⊙ 分析</button>
+                </div>
+            </header>
+
+            <section id="chatMessages" class="chat-messages"></section>
+
+            <section class="composer">
+                <div class="composer-toolbar" id="upload">
+                    <label class="upload-label">
+                        <input id="fileInput" type="file" multiple>
+                        <span>上传文档</span>
+                    </label>
+                    <select id="modeSelect">
+                        <option value="quick">普通回答</option>
+                        <option value="stream">流式回答</option>
+                    </select>
+                </div>
+                <div class="composer-row">
+                    <textarea id="messageInput" rows="3"
+                        placeholder="针对已入库文档提问，按 Enter 发送，Shift+Enter 换行…"></textarea>
+                    <button id="sendBtn" class="send-btn">发送</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- ── INSPECTOR ────────────────────────── -->
+        <aside class="inspector">
+            <section class="inspector-card">
+                <div class="section-title">工作区状态</div>
+                <div id="statsPanel" class="stats-grid"></div>
+            </section>
+
+            <section class="inspector-card">
+                <div class="section-title">已入库文档</div>
+                <div id="documentList" class="document-list"></div>
+            </section>
+
+            <section class="inspector-card">
+                <div class="section-title">工作区分析</div>
+                <pre id="diagnosisOutput" class="diagnosis-output">暂未生成分析结果。</pre>
+            </section>
+        </aside>
+    </div>
+
+    <template id="messageTemplate">
+        <article class="message">
+            <div class="message-role"></div>
+            <div class="message-body"></div>
+        </article>
+    </template>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

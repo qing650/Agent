@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyAgent Novel Studio</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="novel-body">
+    <div class="novel-shell">
+        <aside class="novel-sidebar">
+            <div class="brand">
+                <div class="brand-mark">N</div>
+                <div>
+                    <h1>Novel Studio</h1>
+                    <p>大纲生成 + 章节创作</p>
+                </div>
+            </div>
+
+            <nav class="novel-nav">
+                <button id="themeToggleBtn" class="ghost-btn" type="button">浅色模式</button>
+                <a class="ghost-btn" href="/">← 返回平台首页</a>
+                <a class="ghost-btn" href="/agents/chat">切换到知识库问答</a>
+            </nav>
+
+            <section class="novel-panel">
+                <div class="section-title">项目信息</div>
+                <label class="field-label" for="novelIdInput">小说 ID</label>
+                <input id="novelIdInput" class="text-input" placeholder="如 demo001" autocomplete="off">
+
+                <label class="field-label" for="novelTitleInput">小说标题</label>
+                <input id="novelTitleInput" class="text-input" placeholder="如 代码之城" autocomplete="off">
+
+                <label class="field-label" for="novelTagsInput">标签</label>
+                <input id="novelTagsInput" class="text-input" placeholder="科幻, 穿越, 悬疑" autocomplete="off">
+
+                <label class="field-label" for="styleTagsInput">风格标签</label>
+                <textarea id="styleTagsInput" class="text-input text-area" rows="4" placeholder="每行一个，格式：tone=冷峻&#10;style=节奏快"></textarea>
+
+                <button id="loadProjectBtn" class="primary-btn">读取项目</button>
+            </section>
+
+            <section class="novel-panel">
+                <div class="section-title">历史小说</div>
+                <div id="historyProjectList" class="history-project-list">
+                    <div class="empty-state">正在加载历史小说...</div>
+                </div>
+            </section>
+
+            <section class="novel-panel">
+                <div class="section-title">项目状态</div>
+                <div id="projectMeta" class="meta-list">
+                    <div class="empty-state">还没有加载项目。</div>
+                </div>
+            </section>
+        </aside>
+
+        <main class="novel-main">
+            <header class="novel-hero">
+                <div>
+                    <h2>小说生成工作台</h2>
+                    <p id="novelStatusText">填写项目信息后，可以先生成大纲，再继续生成章节。</p>
+                </div>
+            </header>
+
+            <section class="novel-grid">
+                <section class="novel-card">
+                    <div class="card-head">
+                        <h3>生成大纲</h3>
+                        <div class="inline-actions">
+                            <input id="targetLengthInput" class="text-input short-input" type="number" min="200" step="100" value="3000">
+                            <button id="generateOutlineBtn" class="send-btn">生成大纲</button>
+                        </div>
+                    </div>
+                    <textarea id="outlineIdeaInput" class="text-input text-area tall-area" rows="10" placeholder="输入小说创意、核心设定、人物关系或你想先展开的故事想法。"></textarea>
+                    <div class="response-head">
+                        <span>大纲内容</span>
+                        <button id="saveOutlineBtn" class="ghost-btn">保存大纲修改</button>
+                    </div>
+                    <textarea id="outlineContentOutput" class="text-input text-area giant-area" rows="18" placeholder="生成后的大纲会显示在这里。"></textarea>
+                </section>
+
+                <section class="novel-card">
+                    <div class="card-head">
+                        <h3>生成章节</h3>
+                        <div class="inline-actions">
+                            <input id="chapterLengthInput" class="text-input short-input" type="number" min="300" step="100" value="3000">
+                            <input id="chapterCountInput" class="text-input short-input" type="number" min="1" step="1" value="1">
+                            <button id="generateChapterBtn" class="send-btn">生成章节</button>
+                        </div>
+                    </div>
+                    <textarea id="chapterIdeaInput" class="text-input text-area tall-area" rows="10" placeholder="输入本章事件、冲突、人物推进方向。第一次生成建议写得更具体一些。"></textarea>
+                    <div class="response-head">
+                        <span>章节列表</span>
+                        <button id="refreshProjectBtn" class="ghost-btn">刷新项目</button>
+                    </div>
+                    <div id="chapterList" class="chapter-list">
+                        <div class="empty-state">还没有章节。</div>
+                    </div>
+                </section>
+            </section>
+
+            <section class="novel-card novel-output-card">
+                <div class="card-head">
+                    <h3>当前章节内容</h3>
+                    <div class="inline-actions">
+                        <button id="saveChapterBtn" class="ghost-btn">保存章节修改</button>
+                    </div>
+                </div>
+                <input id="chapterTitleInput" class="text-input" placeholder="章节标题">
+                <textarea id="chapterSummaryInput" class="text-input text-area" rows="3" placeholder="章节摘要"></textarea>
+                <textarea id="chapterPredictionInput" class="text-input text-area" rows="3" placeholder="下一章预测"></textarea>
+                <textarea id="chapterContentOutput" class="text-input text-area giant-area" rows="20" placeholder="点击左侧章节卡片后，正文会显示在这里。"></textarea>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/novel.js"></script>
+</body>
+</html>
